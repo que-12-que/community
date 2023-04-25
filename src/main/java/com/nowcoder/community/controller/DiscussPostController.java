@@ -150,7 +150,13 @@ public class DiscussPostController implements CommunityConstant {
         // 1为置顶
         discussPostService.updateType(id, 1);
 
-        // 触发发帖事件
+        // 触发发帖事件,同步到elasticsearch中
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(id);
+        eventProducer.fireEvent(event);
 
         return CommunityUtil.getJSONString(0);
 
@@ -162,7 +168,13 @@ public class DiscussPostController implements CommunityConstant {
         //
         discussPostService.updateStatus(id, 1);
 
-        // 触发发帖事件
+        // 触发发帖事件,同步到elasticsearch中
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(id);
+        eventProducer.fireEvent(event);
 
         return CommunityUtil.getJSONString(0);
 
@@ -171,10 +183,16 @@ public class DiscussPostController implements CommunityConstant {
     @RequestMapping(path = "/delete", method = RequestMethod.POST)
     @ResponseBody
     public String setDelete(int id) {
-        //
-        discussPostService.updateType(id, 2);
+        //拉黑
+        discussPostService.updateStatus(id, 2);
 
-        // 触发删帖事件
+        // 触发删帖事件,同步到elasticsearch中
+        Event event = new Event()
+                .setTopic(TOPIC_DELETE)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(id);
+        eventProducer.fireEvent(event);
 
         return CommunityUtil.getJSONString(0);
 
